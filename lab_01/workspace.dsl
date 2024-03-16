@@ -5,6 +5,7 @@ workspace main_model "Сайт заказа услуг" {
     !identifiers hierarchical
 
     !docs documentation
+    !adrs decisions
 
     model {
         properties { 
@@ -12,6 +13,7 @@ workspace main_model "Сайт заказа услуг" {
         }
 
         user = person "Пользователь, желающий приобрести услугу"
+        
 
         service = element "Сервисный центр"
 
@@ -35,7 +37,13 @@ workspace main_model "Сайт заказа услуг" {
 
                 executor_database = container "Executor Database" {
                     description "База данных с информацией об услугах"
-                    technology "PostgreSQL 15"
+                    technology "MongoDB 5"
+                    tags "database"
+                }
+
+                user_cache = container "User Cache" {
+                    description "Кэш пользовательских данных для ускорения аунтификации"
+                    technology "Redis"
                     tags "database"
                 }
             }
@@ -43,6 +51,7 @@ workspace main_model "Сайт заказа услуг" {
             user -> user_service "Поиск подходящей услуги" "TCP 6379"
             user_service -> user_database "Получение/обновление данных о пользователях" "TCP 6379"
             user_service -> executor_service "Получение/обновление данных о доступных услугах" "TCP 6379"
+            user_service -> user_cache "Получение/обновление данных о пользователях" "TCP 6379"
             executor_service -> executor_database "Получение/обновление данных о доступных услугах" "TCP 6379"
             executor_service -> service "Запрос на предостваление услуги"
             service -> executor_service "Ответ на запрос"
@@ -51,7 +60,47 @@ workspace main_model "Сайт заказа услуг" {
         user -> web_app "Заказ услуг"
         web_app -> service "Бронирование услуги в сервисном центре" "REST HTTP:443"
         service -> user "Предоставление услуги"
+
+        deploymentEnvironment "Production" {
+            deploymentNode "User Server" {
+                containerInstance web_app.user_service
+                properties {
+                    "cpu" "16"
+                    "ram" "512Gb"
+                    "ssd" "4Tb"
+                }
+            }
+
+            deploymentNode "Temperature Server" {
+                containerInstance web_app.executor_service
+                properties {
+                    "cpu" "16"
+                    "ram" "512Gb"
+                    "ssd" "4Tb"
+                }
+            }
+
+            deploymentNode "databases" {
+     
+                deploymentNode "Database User" {
+                    containerInstance web_app.user_database
+                    instances 3
+                }
+
+                deploymentNode "Database Executer" {
+                    containerInstance web_app.executor_database
+                    instances 3
+                }
+
+                deploymentNode "Cache User" {
+                    containerInstance web_app.user_cache
+                    instances 3
+                }
+            }
+        }
     }
+
+
     views {
 
         themes default
