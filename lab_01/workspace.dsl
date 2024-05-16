@@ -138,13 +138,19 @@ workspace main_model "Сайт заказа услуг" {
         dynamic web_app "UC02" "Поиск пользователя по логину" {
             autoLayout
             performer -> web_app.user_service "Получить пользователя с нужным логином (GET /user/search_by_login)"
-            web_app.user_service -> web_app.user_database "Получить данные о пользователе"
+            web_app.user_service -> web_app.user_cache "Получить данные о пользователе из кэша"
+            web_app.user_cache -> web_app.user_service "Ответ от Redis если пользователь в кэше"
+            web_app.user_service -> web_app.user_database "Если пользователя не было в кэше сходить в БД и искать там"
+            web_app.user_database -> web_app.user_service "Если пользователь существует, то добавить запрос в кэш"
         }
 
         dynamic web_app "UC03" "Поиск пользователя по маске имя и фамилия" {
             autoLayout
-            performer -> web_app.user_service "Получить пользователя по маске имени (GET /user/search_by_name)"
-            web_app.user_service -> web_app.user_database "Получить данные о пользователях"
+            performer -> web_app.user_service "Получить пользователей с нужной маской (GET /user/search_by_login)"
+            web_app.user_service -> web_app.user_cache "Получить данные о пользователе из кэша"
+            web_app.user_cache -> web_app.user_service "Ответ от Redis если пользователь в кэше"
+            web_app.user_service -> web_app.user_database "Если пользователя не было в кэше сходить в БД и искать там"
+            web_app.user_database -> web_app.user_service "Если пользователь существует, то добавить запрос в кэш"
         }
 
         dynamic web_app "UC04" "Создание услуги" {
