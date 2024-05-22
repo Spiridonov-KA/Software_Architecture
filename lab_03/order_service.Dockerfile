@@ -15,5 +15,6 @@ RUN git clone -b poco-1.13.2-release https://github.com/pocoproject/poco.git &&\
 RUN ldconfig
 COPY  ./ /order_service/
 WORKDIR /order_service
+RUN pip install -r ./requirements.txt --break-system-packages
 RUN cmake -B build -S order_service && cmake --build build
-ENTRYPOINT [ "./build/order_service" ]
+ENTRYPOINT [ "bash", "./order_service/start.sh" ]

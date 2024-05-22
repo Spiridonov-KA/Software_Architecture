@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS users (
             ))
         con.commit()
 
-@cli.command('mongodb')
+@cli.command('mongodb_service')
 @click.option('--users-count', required=True, type=int)
 @click.option('--services-count', default=0, type=int)
 @click.option('--services-in-orders', default=0, type=int)
@@ -61,8 +61,6 @@ def mongodb(users_count, services_count=0, services_in_orders=0):
         db = client.archdb
         services_collection = db.services
         services_collection.drop()
-        orders_collection = db.orders
-        orders_collection.drop()
     except:
         raise Exception('Can`t establish connection to database')
     
@@ -75,7 +73,22 @@ def mongodb(users_count, services_count=0, services_in_orders=0):
         }
         services_collection.insert_one(service)
 
+
+@cli.command('mongodb_order')
+@click.option('--users-count', required=True, type=int)
+@click.option('--services-count', default=0, type=int)
+@click.option('--services-in-orders', default=0, type=int)
+def mongodb(users_count, services_count=0, services_in_orders=0):
+    try:
+        client = MongoClient(os.getenv('DB_HOST'), int(os.getenv('DB_PORT')))
+        db = client.archdb
+        orders_collection = db.orders
+        orders_collection.drop()
+    except:
+        raise Exception('Can`t establish connection to database')
+    
     for i in range(users_count):
+        print("AAAAAAA")
         order = []
         for j in range(random.randrange(0, services_in_orders+1)):
             order.append(str(random.randrange(services_count)))

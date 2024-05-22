@@ -43,7 +43,7 @@ void UserHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net
                 }
             } else if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_POST) {
                 std::string message;
-                if (form.has("first_name") && form.has("last_name") && form.has("email") && form.has("phone") && form.has("login") && form.has("password")) {
+                if (form.has("first_name") && form.has("last_name") && form.has("email") && form.has("phone") && form.has("login") && form.has("password") && form.has("address")) {
                     database::User user;
                     user.first_name() = form.get("first_name");
                     user.last_name() = form.get("last_name");

@@ -25,11 +25,11 @@ services:
       context: .
       dockerfile: service_service.Dockerfile
     environment:
-      - DB_HOST=mongodb
+      - DB_HOST=mongodb_service
       - DB_PORT=27017
       - DB_DATABASE=archdb
     depends_on:
-      mongodb:
+      mongodb_service:
         condition: service_healthy
     ports:
       - 8081:8080
@@ -42,11 +42,11 @@ services:
       context: .
       dockerfile: order_service.Dockerfile
     environment:
-      - DB_HOST=mongodb
+      - DB_HOST=mongodb_order
       - DB_PORT=27017
       - DB_DATABASE=archdb
     depends_on:
-      mongodb:
+      mongodb_order:
         condition: service_healthy
     ports:
       - 8082:8080
@@ -73,12 +73,27 @@ services:
     networks:
       - network
 
-  mongodb:
+  mongodb_service:
     image: mongo:5.0
     volumes:
-      - ./db/mongodb:/data/db
+      - ./db/mongodb_service:/data/db
     ports:
       - 27017:27017
+    restart: unless-stopped
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - network
+
+  mongodb_order:
+    image: mongo:5.0
+    volumes:
+      - ./db/mongodb_order:/data/db
+    ports:
+      - 27018:27017
     restart: unless-stopped
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
