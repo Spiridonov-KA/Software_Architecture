@@ -1,0 +1,109 @@
+version: '3'
+services:
+  user_service:
+    tty: true
+    build:
+      context: .
+      dockerfile: user_service.Dockerfile
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_LOGIN=stud
+      - DB_PASSWORD=stud
+      - DB_DATABASE=archdb
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - 8080:8080
+    networks:
+      - network
+
+  service_service:
+    tty: true
+    build:
+      context: .
+      dockerfile: service_service.Dockerfile
+    environment:
+      - DB_HOST=mongodb_service
+      - DB_PORT=27017
+      - DB_DATABASE=archdb
+    depends_on:
+      mongodb_service:
+        condition: service_healthy
+    ports:
+      - 8081:8080
+    networks:
+      - network
+
+  order_service:
+    tty: true
+    build:
+      context: .
+      dockerfile: order_service.Dockerfile
+    environment:
+      - DB_HOST=mongodb_order
+      - DB_PORT=27017
+      - DB_DATABASE=archdb
+    depends_on:
+      mongodb_order:
+        condition: service_healthy
+    ports:
+      - 8082:8080
+    networks:
+      - network
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=stud
+      - POSTGRES_PASSWORD=stud
+      - PGDATA=/data/postgres
+      - POSTGRES_DB=archdb
+    volumes:
+      - ./db/postgres:/data/postgres
+    ports:
+      - 5432:5432
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d postgres" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - network
+
+  mongodb_service:
+    image: mongo:5.0
+    volumes:
+      - ./db/mongodb_service:/data/db
+    ports:
+      - 27017:27017
+    restart: unless-stopped
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - network
+
+  mongodb_order:
+    image: mongo:5.0
+    volumes:
+      - ./db/mongodb_order:/data/db
+    ports:
+      - 27018:27017
+    restart: unless-stopped
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - network
+
+networks:
+  network:
+    driver: "bridge"
+    external: false

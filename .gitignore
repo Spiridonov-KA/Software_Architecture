@@ -6,3 +6,4 @@ structurizr_on_premises/onpremises/*
 .vscode/
 c4-*
 *.tgz
+db/

@@ -1,0 +1,139 @@
+openapi: '3.0.0'
+info:
+  title: Order service
+  version: '1.0'
+
+servers:
+  - url: http://localhost:8082
+    description: Main server
+
+paths:
+  /order:
+    get:
+      description: Get order information by id
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: "#/components/responses/Order"
+        404:
+          $ref: "#/components/responses/NotFound"
+        400:
+          $ref: "#/components/responses/IncompleteRequest"
+        500:
+          $ref: "#/components/responses/InternalError"
+
+    delete:
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+        404:
+          $ref: "#/components/responses/NotFound"
+        400:
+          $ref: "#/components/responses/IncompleteRequest"
+        500:
+          $ref: "#/components/responses/InternalError"
+
+  /order/add:
+    put:
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: service
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: "#/components/responses/Order"
+        404:
+          $ref: "#/components/responses/NotFound"
+        400:
+          $ref: "#/components/responses/IncompleteRequest"
+        500:
+          $ref: "#/components/responses/InternalError"
+
+  /order/remove:
+    put:
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: service
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: "#/components/responses/Order"
+        404:
+          $ref: "#/components/responses/NotFound"
+        400:
+          $ref: "#/components/responses/IncompleteRequest"
+        500:
+          $ref: "#/components/responses/InternalError"
+
+components:
+  schemas:
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+        services:
+          type: array
+          services:
+            type: string
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+    
+  responses:
+    Order:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Order"
+    NotFound:
+      description: Order not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    InternalError:
+      description: Internal error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    IncompleteRequest:
+      description: Request is incomplete
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

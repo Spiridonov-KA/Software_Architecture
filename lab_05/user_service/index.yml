@@ -244,4 +244,3 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
-# id = kkk bad request 400
